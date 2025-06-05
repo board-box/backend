@@ -127,8 +127,9 @@ func (r *repository) createCollection(ctx context.Context, userID int64, req Col
 		return Collection{}, err
 	}
 	defer func() {
-		if err = tx.Rollback(ctx); err != nil {
-			panic(err)
+		if r := recover(); r != nil {
+			_ = tx.Rollback(ctx)
+			panic(r)
 		}
 	}()
 
