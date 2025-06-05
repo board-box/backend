@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/board-box/backend/docs"
+	"github.com/board-box/backend/docs"
 	"github.com/board-box/backend/internal/auth"
 	"github.com/board-box/backend/internal/config"
 	chatHandler "github.com/board-box/backend/internal/handler/chat"
@@ -96,6 +96,8 @@ func (a *App) initConfigs(_ context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	docs.SwaggerInfo.Host = a.cfg.ExternalAddr()
 
 	a.jwt = auth.NewJWTManager(a.cfg.JWT.SecretKey, a.cfg.JWT.TokenDuration)
 	return nil

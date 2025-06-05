@@ -1,9 +1,6 @@
 .PHONY: build run stop db-up db-down generate migration-create migration-up bin-deps
 
-ifneq (,$(wildcard .env))
-include .env
-export $(shell grep -v '^#' .env | sed 's/=.*//')
-endif
+-include .env
 
 ##############################
 # General

@@ -19,6 +19,7 @@ type Config struct {
 
 type AppConfig struct {
 	Name    string
+	Host    string
 	Version string
 	Env     string // dev/stage/prod
 }
@@ -57,6 +58,7 @@ func New() (*Config, error) {
 		Name:    getEnv("APP_NAME", "myapp"),
 		Version: getEnv("APP_VERSION", "1.0.0"),
 		Env:     getEnv("APP_ENV", "dev"),
+		Host:    getEnv("APP_HOST", "localhost"),
 	}
 
 	pgPort, err := strconv.Atoi(getEnv("PG_PORT", "5432"))
@@ -149,4 +151,8 @@ func (c *Config) DSN() string {
 
 func (c *Config) Addr() string {
 	return fmt.Sprintf("%s:%d", c.HTTP.Host, c.HTTP.Port)
+}
+
+func (c *Config) ExternalAddr() string {
+	return fmt.Sprintf("%s:%d", c.App.Host, c.HTTP.Port)
 }
