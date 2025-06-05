@@ -154,5 +154,8 @@ func (c *Config) Addr() string {
 }
 
 func (c *Config) ExternalAddr() string {
+	if c.App.Host != "localhost" {
+		return c.App.Host
+	}
 	return fmt.Sprintf("%s:%d", c.App.Host, c.HTTP.Port)
 }
