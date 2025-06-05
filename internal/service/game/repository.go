@@ -27,7 +27,7 @@ func newRepository(db *pgx.Conn) *repository {
 
 func (r *repository) listGames(ctx context.Context) ([]Game, error) {
 	query, args, err := psql.
-		Select("id", "title", "description", "genre", "price", "release_date", "created_at", "updated_at").
+		Select("id", "title", "description", "genre", "age", "person", "avg_time", "difficulty", "image", "rules").
 		From(gameTableName).
 		OrderBy("title ASC").
 		ToSql()
@@ -60,7 +60,7 @@ func (r *repository) listGames(ctx context.Context) ([]Game, error) {
 
 func (r *repository) getGameById(ctx context.Context, id int64) (Game, error) {
 	query, args, err := psql.
-		Select("id", "title", "description", "genre", "price", "release_date", "created_at", "updated_at").
+		Select("id", "title", "description", "genre", "age", "person", "avg_time", "difficulty", "image", "rules").
 		From(gameTableName).
 		Where(squirrel.Eq{"id": id}).
 		ToSql()
@@ -86,7 +86,7 @@ func (r *repository) getGamesByIds(ctx context.Context, ids []int64) ([]Game, er
 	}
 
 	query, args, err := psql.
-		Select("id", "title", "description", "genre", "price", "release_date", "created_at", "updated_at").
+		Select("id", "title", "description", "genre", "age", "person", "avg_time", "difficulty", "image", "rules").
 		From(gameTableName).
 		Where(squirrel.Eq{"id": ids}).
 		ToSql()
@@ -124,8 +124,8 @@ func (r *repository) getGamesByIds(ctx context.Context, ids []int64) ([]Game, er
 func (r *repository) createGame(ctx context.Context, game Game) (int64, error) {
 	query, args, err := psql.
 		Insert(gameTableName).
-		Columns("title", "description", "genre").
-		Values(game.Title, game.Description, game.Genre).
+		Columns("title", "description", "genre", "age", "person", "avg_time", "difficulty", "image", "rules").
+		Values(game.Title, game.Description, game.Genre, game.Age, game.Person, game.AvgTime, game.Difficulty, game.Image, game.Rules).
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
