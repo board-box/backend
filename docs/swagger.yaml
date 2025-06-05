@@ -1,0 +1,643 @@
+basePath: /api/v1
+definitions:
+  gin.H:
+    additionalProperties: {}
+    type: object
+  github_com_board-box_backend_internal_service_collection.Collection:
+    properties:
+      game_ids:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      pinned:
+        type: boolean
+      user_id:
+        type: integer
+    type: object
+  github_com_board-box_backend_internal_service_game.Game:
+    properties:
+      age:
+        type: string
+      avg_time:
+        type: string
+      complexity:
+        type: string
+      description:
+        type: string
+      genre:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      person:
+        type: string
+      rules:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_handler_chat.ChatRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  internal_handler_chat.ChatResponse:
+    properties:
+      messages:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_handler_collection.CreateCollectionRequest:
+    properties:
+      name:
+        example: my collection
+        type: string
+    type: object
+  internal_handler_collection.UpdateCollectionRequest:
+    properties:
+      name:
+        example: my collection
+        type: string
+      pinned:
+        example: false
+        type: boolean
+    type: object
+  internal_handler_game.GetGamesByIDsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  internal_handler_user.InfoResponse:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_handler_user.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: securepassword
+        type: string
+    type: object
+  internal_handler_user.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: securepassword
+        type: string
+      username:
+        example: username
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для настольных игр
+  title: Board Game API
+  version: "1.0"
+paths:
+  /chat:
+    post:
+      consumes:
+      - application/json
+      description: Отправляет сообщение пользователя в языковую модель и возвращает
+        ответ
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Входное сообщение
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_chat.ChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ответ от LLM
+          schema:
+            $ref: '#/definitions/internal_handler_chat.ChatResponse'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Неавторизованный доступ
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Отправить сообщение в LLM
+      tags:
+      - Chat
+  /collections:
+    get:
+      description: Получить список всех коллекций текущего пользователя
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_board-box_backend_internal_service_collection.Collection'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Список коллекций пользователя
+      tags:
+      - Collections
+    post:
+      consumes:
+      - application/json
+      description: Создать новую коллекцию для текущего пользователя
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Данные коллекции
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_collection.CreateCollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_board-box_backend_internal_service_collection.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Создать новую коллекцию
+      tags:
+      - Collections
+  /collections/{id}:
+    delete:
+      description: Удалить коллекцию по её ID
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Удалить коллекцию
+      tags:
+      - Collections
+    get:
+      description: Получить коллекцию по её идентификатору
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_board-box_backend_internal_service_collection.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Получить коллекцию по ID
+      tags:
+      - Collections
+    put:
+      consumes:
+      - application/json
+      description: Обновить данные коллекции
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные коллекции
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_collection.UpdateCollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_board-box_backend_internal_service_collection.Collection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Обновить коллекцию
+      tags:
+      - Collections
+  /collections/{id}/games/{game_id}:
+    delete:
+      description: Удаляет игру из коллекции пользователя
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID игры
+        in: path
+        name: game_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Удалить игру из коллекции
+      tags:
+      - Collections
+    post:
+      consumes:
+      - application/json
+      description: Добавляет игру в коллекцию пользователя
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID игры
+        in: path
+        name: game_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Добавить игру в коллекцию
+      tags:
+      - Collections
+  /games/:
+    get:
+      description: Получить список всех настольных игр
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_board-box_backend_internal_service_game.Game'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Список игр
+      tags:
+      - Games
+  /games/{id}:
+    get:
+      description: Получить настольную игру по её идентификатору
+      parameters:
+      - description: ID игры
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_board-box_backend_internal_service_game.Game'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Получить игру по ID
+      tags:
+      - Games
+  /games/by-ids:
+    post:
+      consumes:
+      - application/json
+      description: Получить несколько игр по их идентификаторам
+      parameters:
+      - description: Список ID игр
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_game.GetGamesByIDsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_board-box_backend_internal_service_game.Game'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Получить список игр по ID
+      tags:
+      - Games
+  /user/info:
+    get:
+      description: Возвращает информацию о текущем авторизованном пользователе
+      parameters:
+      - description: Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о пользователе
+          schema:
+            $ref: '#/definitions/internal_handler_user.InfoResponse'
+        "401":
+          description: Неавторизованный доступ
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Получить информацию о пользователе
+      tags:
+      - Users
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя и возвращает JWT токен
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Авторизация пользователя
+      tags:
+      - Users
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя с email и паролем
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler_user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Регистрация пользователя
+      tags:
+      - Users
+swagger: "2.0"

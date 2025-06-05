@@ -1,0 +1,55 @@
+services:
+  boardbox:
+    container_name: boardbox-backend
+    build:
+      context: ../..
+      dockerfile: build/docker/Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - net
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_DB=${PG_DB:-boardbox}
+      - PG_USER=${PG_USER:-user}
+      - PG_PASSWORD=${PG_PASSWORD:-password}
+      - JWT_SECRET=${JWT_SECRET:-secret}
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    command: [ "postgres" ]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql/init:/docker-entrypoint-initdb.d
+    networks:
+      - net
+    environment:
+      POSTGRES_DB: ${PG_DB:-boardbox}
+      POSTGRES_USER: ${PG_USER:-user}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-password}
+    env_file:
+      - path: .env
+        required: false
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${PG_USER:-user} -d ${PG_DB:-boardbox}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  net:
+    driver: bridge
+
+volumes:
+  postgres_data:
